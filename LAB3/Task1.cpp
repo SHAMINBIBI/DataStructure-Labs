@@ -180,7 +180,7 @@ class doubleList
         }
         cout <<endl;
         cout<< "REVERSE: ";
-        temp = tail;   //reusing temp instead of decalring anotehr variable
+        temp = tail;   //reeeusing temp instead of decalring anotehr variable
         if(temp == NULL)
         {
             cout << "EMPTY! "<< endl;
