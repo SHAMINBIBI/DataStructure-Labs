@@ -1,0 +1,119 @@
+#######################################
+# CORE SYSTEM TRASH (THE UNIVERSAL NOPE)
+#######################################
+
+# OS junk
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor & IDE stuff
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+*.log
+
+#######################################
+# BUILD OUTPUTS (DON’T COMMIT PAIN)
+#######################################
+
+# General build folders
+/build/
+dist/
+out/
+bin/
+obj/
+
+# C / C++
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.so
+*.dll
+
+#######################################
+# PYTHON (SNAKES SHED SKIN, NOT GIT)
+#######################################
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Python tools
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+#######################################
+# NODE / WEB (JS DRAMA CONTAINMENT)
+#######################################
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.env
+.env.local
+
+#######################################
+# FPGA / VIVADO (YES, THIS IS IMPORTANT)
+#######################################
+
+# Vivado generated files
+.vivado/
+.xil/
+*.jou
+*.log
+*.str
+*.zip
+*.cache
+*.hw
+*.runs/
+*.sim/
+*.srcs/
+*.ip_user_files/
+
+# Bitstreams & reports (optional – uncomment if needed)
+# *.bit
+# *.rpt
+
+#######################################
+# MATLAB / SIMULATION
+#######################################
+
+*.asv
+*.m~
+slprj/
+
+#######################################
+# ARCHIVES (GIT IS NOT GOOGLE DRIVE)
+#######################################
+
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+#######################################
+# PERSONAL NOTES (KEEP SECRETS SECRET)
+#######################################
+
+notes.txt
+todo.txt
+*.private
