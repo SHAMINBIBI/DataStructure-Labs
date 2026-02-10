@@ -24,6 +24,8 @@ public:
 		}
 	}
 	void deleteFromStart()
+
+	// 1. Check if the list is empty
 	{	if (reg_patient != NULL)
 		{   record* temp = reg_patient;
 			reg_patient = reg_patient->next;

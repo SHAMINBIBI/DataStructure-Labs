@@ -88,7 +88,7 @@ class browserHistory
         delete temp;
     }
 }
-    string back()  //browser previos tab/page func
+    string back()  //browsser previos tab/page func
     {
         if(current==NULL || current->prev==NULL)
         {
