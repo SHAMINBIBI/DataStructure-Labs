@@ -39,7 +39,6 @@ class dynamicStack
         node<S>* newNode = new node<S>(d);
         newNode->next = top;
         top = newNode;
-        cout << "Inserted: " << d << endl;
     }    
     void pop()
     {
@@ -50,7 +49,6 @@ class dynamicStack
         }        
         node<S>* temp = top;
         top = top->next;
-        cout << "Deleted: " << temp->data << endl;
         delete temp;
     }    
     S getTop()
@@ -58,7 +56,7 @@ class dynamicStack
         if(isEmpty())
         {
             cout << "Stack is empty" << endl;
-            return -1;
+            return S();
         }
         return top->data;
     }    
@@ -70,7 +68,7 @@ class dynamicStack
             return;
         }        
         cout << "Stack : ";
-        node* temp = top;
+        node<S>* temp = top;
         while(temp != NULL)
         {
             cout << temp->data << " ";
