@@ -329,12 +329,13 @@ public:
         if(minScore > maxScore) {
             cout << "Invalid range: minScore > maxScore" << endl;
             return;
-        }
+        } // FIXED: Added check for invalid range
         cout << "\nBooks with Popularity between " << minScore << " and " << maxScore  << endl;
         rangeQuery(root, minScore, maxScore);
         cout  << endl;
     }
 };
+
 int main() {
     BST<Book> catalog;   
     cout << "Maktaba-e-Meen Library Management System" << endl;
