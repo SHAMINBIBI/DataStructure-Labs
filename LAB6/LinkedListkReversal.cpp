@@ -84,7 +84,7 @@ public:
 };
 class LinkedListRev{
     public:
-    node* reversebyKGroup(node* head,int k)
+    node* reverseKGroup(node* head,int k)
 	{
 		node* temp =head;
 		//checking if k nodes exist in linked list
@@ -96,7 +96,7 @@ class LinkedListRev{
 			count++;
 		}
 		//recursive call for the rest of list i.e after k group
-		node* prevNode = reversebyKGroup(temp,k);
+		node* prevNode = reverseKGroup(temp,k);
 		//reverse current group
 		temp = head;
 		count = 1;
@@ -117,7 +117,7 @@ int main()
     list1.display();
     LinkedListRev revTool;
     int k = 2;   //for k=2
-    node* newHead1 = revTool.reversebyKGroup(list1.getHead(), k);  // Get the head, reverse it, and set the new head back
+    node* newHead1 = revTool.reverseKGroup(list1.getHead(), k);  // Get the head, reverse it, and set the new head back
     list1.setHead(newHead1);
     cout << "After " << k << "-group reversal: ";
     list1.display();
@@ -126,7 +126,7 @@ int main()
     cout << "Original List: ";
     list2.display();
     int k1 = 3;
-    node* newHead2 = revTool.reversebyKGroup(list2.getHead(), k1);  //for k=3
+    node* newHead2 = revTool.reverseKGroup(list2.getHead(), k1);  //for k=3
     list2.setHead(newHead2);
     cout << "After " << k1 << "-group reversal: ";
     list2.display();
