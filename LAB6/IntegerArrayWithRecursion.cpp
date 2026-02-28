@@ -48,7 +48,7 @@ public:
             cout << "Number already exists" << endl;
             return;}
         else
-        {cout<< "Element does not exist previously so it can be inserted\n";
+        {cout<< "Element  inserted\n";
         }
         root = insert(root, val);
     }    
@@ -104,10 +104,10 @@ public:
     bool search(T val) {
         node<T>* result = findNode(root, val);
         if(result) {
-            cout << "Element = " << val << " found" << endl;
+            cout << "Element = " << val << " exists in tree" << endl;
             return true;
         } else {
-            cout << "Element= " << val << " not found" << endl;
+            cout << "Element= " << val << " does not exist in the tree" << endl;
             return false;
         }
     }   
@@ -180,7 +180,6 @@ public:
     int calculateHeight(node<T>* root) {
         if (root == nullptr)
         {
-            cout << "EMPTY TREE\n";
             return 0;
         }
         else 
@@ -217,18 +216,19 @@ public:
     }
 };
 int main()
-{   BST <int> tree1;
-    tree1.insert(100);
-    tree1.insert(50);
-    tree1.insert(150);
-    tree1.insert(20);
-    tree1.insert(75);
-    tree1.inorderTraverse();
-    tree1.search(30);
-    tree1.search(75);
-    cout << tree1.getMax()<<endl;
-    cout << tree1.getMin();
-    cout << tree1.calculateHeight(tree1.getRoot());
+{   BST<int> myTree;
+    int arr[] = {100, 50, 150, 20, 75};
+    int n = sizeof(arr) / sizeof(arr[0]);
+    for(int i = 0; i < n; i++) {  //Constructing BST from array
+        myTree.insert(arr[i]);    //recursve func call
+    }
+    cout << "\nIn-order Traversal:" << endl;
+    myTree.inorderTraverse();
+    myTree.search(55);  // Existing element
+    myTree.search(100); // Non-existing element
+    cout << "Height of the BST: " << myTree.calculateHeight(myTree.getRoot()) << endl;
+    cout << "Min Element: " << myTree.getMin() << endl;
+    cout << "Max Element: " << myTree.getMax() << endl;
     return 0;
 
 }

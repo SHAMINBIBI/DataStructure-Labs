@@ -122,7 +122,7 @@ int main()
     cout << "After " << k << "-group reversal: ";
     list1.display();
     linkedList list2;
-    for (int i = 1; i <= 6; i++) list2.insertAtEnd(i);
+    for (int i = 1; i <= 5; i++) list2.insertAtEnd(i);
     cout << "Original List: ";
     list2.display();
     int k1 = 3;
