@@ -3,173 +3,275 @@
 
 using namespace std;
 
-// --- 1. Revision Structure (Linked List Stack Node) ---
+// ============================================================
+// 1. REVISION STRUCTURE
+// ============================================================
 struct Revision {
     int revNumber;
     string content;
-    Revision* next;
-    Revision(int num, string cont) : revNumber(num), content(cont), next(nullptr) {}
+    Revision() : revNumber(0), content("") {}
+    Revision(int n, string c) : revNumber(n), content(c) {}
 };
 
-// --- 2. Document Structure (BST Node) ---
-struct Document {
+// ============================================================
+// 2. DYNAMIC STACK ADT (Your Code)
+// ============================================================
+template <class T>
+struct StackNode {
+    T data;
+    StackNode<T>* next;
+    StackNode(T d) : data(d), next(NULL) {}
+};
+
+template <class S>
+class dynamicStack {
+    StackNode<S>* top;
+public:
+    dynamicStack() : top(NULL) {}
+    bool isEmpty() { return (top == NULL); }
+    void push(S d) {
+        StackNode<S>* newNode = new StackNode<S>(d);
+        newNode->next = top;
+        top = newNode;
+    }
+    void pop() {
+        if (isEmpty()) return;
+        StackNode<S>* temp = top;
+        top = top->next;
+        delete temp;
+    }
+    S getTop() {
+        if (isEmpty()) return S();
+        return top->data;
+    }
+    ~dynamicStack() { while (!isEmpty()) pop(); }
+};
+
+// ============================================================
+// 3. DOCUMENT CLASS (Metadata + Internal Stack)
+// ============================================================
+class Document {
+public:
     int id;
     string title;
     string author;
-    string status; // "Pending", "InReview", "Approved", "Rejected"
-    
-    Revision* revTop; // Internal Stack for Revisions
-    Document *left, *right;
+    string status; // pending, approved, inreview, rejected
+    dynamicStack<Revision> revisions;
 
-    Document(int _id, string _t, string _a) {
-        id = _id; title = _t; author = _a;
-        status = "Pending";
-        revTop = nullptr;
-        left = right = nullptr;
-    }
+    Document(int i, string t, string a) : id(i), title(t), author(a), status("pending") {}
+    Document() : id(0), title(""), author(""), status("") {}
 
-    // O(1) Add Revision
-    void addRevision(string content) {
-        int nextRev = (revTop == nullptr) ? 1 : revTop->revNumber + 1;
-        Revision* newRev = new Revision(nextRev, content);
-        newRev->next = revTop;
-        revTop = newRev;
-    }
-
-    // O(1) Undo Revision
-    void undoRevision() {
-        if (revTop == nullptr) return;
-        Revision* temp = revTop;
-        revTop = revTop->next;
-        delete temp;
-    }
+    // Overloading for BST logic (Requirement i)
+    bool operator<(const Document& other) const { return id < other.id; }
+    bool operator>(const Document& other) const { return id > other.id; }
+    bool operator==(const Document& other) const { return id == other.id; }
 };
 
-// --- 3. Review Queue (Linked List based) ---
-struct QueueNode {
-    Document* doc;
-    QueueNode* next;
-    QueueNode(Document* d) : doc(d), next(nullptr) {}
+// ============================================================
+// 4. BST ADT (Your Code - Modified for Document Pointers)
+// ============================================================
+template <typename T>
+struct BSTNode {
+    T data;
+    BSTNode<T>* left;
+    BSTNode<T>* right;
 };
 
-class ReviewQueue {
-    QueueNode *front, *rear;
+template <typename T>
+class BST {
+    BSTNode<T>* root;
 public:
-    ReviewQueue() : front(nullptr), rear(nullptr) {}
+    BST() : root(nullptr) {}
+    BSTNode<T>* getRoot() { return root; }
 
-    // O(1) Insertion
-    void enqueue(Document* d) {
-        QueueNode* newNode = new QueueNode(d);
-        if (rear == nullptr) {
-            front = rear = newNode;
-            return;
+    BSTNode<T>* insert(BSTNode<T>* node, T val) {
+        if (node == nullptr) {
+            BSTNode<T>* newNode = new BSTNode<T>;
+            newNode->data = val;
+            newNode->left = newNode->right = nullptr;
+            return newNode;
         }
-        rear->next = newNode;
-        rear = newNode;
-    }
-
-    // O(1) Removal
-    Document* dequeue() {
-        if (front == nullptr) return nullptr;
-        QueueNode* temp = front;
-        Document* d = front->doc;
-        front = front->next;
-        if (front == nullptr) rear = nullptr;
-        delete temp;
-        return d;
-    }
-};
-
-// --- 4. Main Workflow System ---
-class WorkflowSystem {
-    Document* root; // BST Root
-    ReviewQueue reviewQueue;
-
-public:
-    WorkflowSystem() : root(nullptr) {}
-
-    // i. Submission (BST Insert) - O(log n)
-    Document* submitDocument(int id, string title, string author) {
-        root = insertRecursive(root, id, title, author);
-        Document* newDoc = searchDocument(id);
-        reviewQueue.enqueue(newDoc); // ii. Placement in Workflow - O(1)
-        return newDoc;
-    }
-
-    Document* insertRecursive(Document* node, int id, string t, string a) {
-        if (node == nullptr) return new Document(id, t, a);
-        if (id < node->id) node->left = insertRecursive(node->left, id, t, a);
-        else if (id > node->id) node->right = insertRecursive(node->right, id, t, a);
+        if (val < node->data) node->left = insert(node->left, val);
+        else if (val > node->data) node->right = insert(node->right, val);
         return node;
     }
 
-    // Search - O(log n)
-    Document* searchDocument(int id) {
-        Document* curr = root;
-        while (curr != nullptr) {
-            if (id == curr->id) return curr;
-            curr = (id < curr->id) ? curr->left : curr->right;
+    void insert(T val) { root = insert(root, val); }
+
+    // Helper to get a pointer to the actual data inside the tree
+    T* findDataPtr(BSTNode<T>* node, int id) {
+        if (node == nullptr) return nullptr;
+        if (node->data.id == id) return &(node->data);
+        if (id < node->data.id) return findDataPtr(node->left, id);
+        return findDataPtr(node->right, id);
+    }
+
+    void inorder(BSTNode<T>* r) {
+        if (r) {
+            inorder(r->left);
+            cout << "ID: " << r->data.id << " | Title: " << r->data.title 
+                 << " | Status: " << r->data.status << endl;
+            inorder(r->right);
         }
-        return nullptr;
-    }
-
-    // ii. Reviewal Process
-    void processNextReview() {
-        Document* d = reviewQueue.dequeue();
-        if (d) {
-            d->status = "InReview";
-            cout << "Document " << d->id << " is now InReview." << endl;
-        }
-    }
-
-    // v. Final Approval/Rejection
-    void finalizeDocument(int id, bool approved) {
-        Document* d = searchDocument(id);
-        if (d) {
-            d->status = approved ? "Approved" : "Rejected";
-        }
-    }
-
-    // vi. Display Archived (In-order Traversal) - O(n)
-    void displayArchived(Document* node) {
-        if (node == nullptr) return;
-        displayArchived(node->left);
-        cout << "ID: " << node->id << " | Title: " << node->title 
-             << " | Status: " << node->status << endl;
-        displayArchived(node->right);
-    }
-
-    void showArchive() {
-        cout << "\n--- Archived Documents (Sorted by ID) ---" << endl;
-        displayArchived(root);
     }
 };
 
+// ============================================================
+// 5. DYNAMIC QUEUE ADT (Your Code)
+// ============================================================
+template <class T>
+struct QueueNode {
+    T d;
+    QueueNode<T>* next;
+    QueueNode(T data) : d(data), next(NULL) {}
+};
+
+template <class S>
+class DQ {
+    QueueNode<S> *front, *rear;
+public:
+    DQ() : front(NULL), rear(NULL) {}
+    bool isEmpty() { return front == NULL; }
+    void enqueue(S d) {
+        QueueNode<S>* n = new QueueNode<S>(d);
+        if (front == NULL) front = rear = n;
+        else { rear->next = n; rear = n; }
+    }
+    void dequeue() {
+        if (isEmpty()) return;
+        QueueNode<S>* temp = front;
+        front = front->next;
+        delete temp;
+        if (front == NULL) rear = NULL;
+    }
+    S getFront() { return (front) ? front->d : S(); }
+};
+
+// ============================================================
+// 6. WORKFLOW MANAGEMENT SYSTEM (The Logic)
+// ============================================================
+
+// AdminAction uses an int 'type' instead of enum:
+// 1 = SUBMISSION, 2 = REVISION_ADD, 3 = FINALIZATION
+struct AdminAction {
+    int type; 
+    int docID;
+    string oldStatus;
+    AdminAction() : type(0), docID(0) {}
+    AdminAction(int t, int id, string s = "") : type(t), docID(id), oldStatus(s) {}
+};
+
+class WorkflowManager {
+    BST<Document> archive;             // O(log n) Search/Insert
+    DQ<Document*> reviewWorkflow;      // O(1) FIFO Queue
+    dynamicStack<AdminAction> adminLog; // System-wide Undo
+
+public:
+    // i. Submission - O(log n)
+    void submitDocument(int id, string title, string author) {
+        Document newDoc(id, title, author);
+        archive.insert(newDoc);
+        
+        // ii. Placement in workflow - O(1)
+        Document* ptr = archive.findDataPtr(archive.getRoot(), id);
+        reviewWorkflow.enqueue(ptr);
+        
+        adminLog.push(AdminAction(1, id)); // 1 = Submission
+        cout << "[System] Doc " << id << " submitted and queued.\n";
+    }
+
+    // ii. Process Workflow (FIFO) - O(1)
+    void processReview() {
+        if (reviewWorkflow.isEmpty()) return;
+        Document* d = reviewWorkflow.getFront();
+        reviewWorkflow.dequeue();
+        d->status = "inreview";
+        cout << "[Workflow] Doc " << d->id << " is now being reviewed (inreview).\n";
+    }
+
+    // iii. Adding a revision - O(1)
+    void addRevision(int id, string content) {
+        Document* d = archive.findDataPtr(archive.getRoot(), id);
+        if (d && d->status == "inreview") {
+            d->revisions.push(Revision(0, content)); 
+            adminLog.push(AdminAction(2, id)); // 2 = Revision
+            cout << "[Revision] Added to Doc " << id << ": " << content << endl;
+        }
+    }
+
+    // iv. Undoing most recent revision - O(1)
+    void undoDocRevision(int id) {
+        Document* d = archive.findDataPtr(archive.getRoot(), id);
+        if (d) {
+            d->revisions.pop();
+            cout << "[Revision] Last revision removed from Doc " << id << endl;
+        }
+    }
+
+    // v. Final approval or rejection
+    void finalize(int id, string newStatus) {
+        Document* d = archive.findDataPtr(archive.getRoot(), id);
+        if (d) {
+            string old = d->status;
+            d->status = newStatus;
+            adminLog.push(AdminAction(3, id, old)); // 3 = Finalization
+            cout << "[Finalize] Doc " << id << " marked as " << newStatus << endl;
+        }
+    }
+
+    // vi. Display Archived (In-order) - O(n)
+    void showArchive() {
+        cout << "\n--- ARCHIVE (Sorted by ID) ---\n";
+        archive.inorder(archive.getRoot());
+    }
+
+    // vii. System wide administrative undo
+    void systemUndo() {
+        if (adminLog.isEmpty()) return;
+        AdminAction last = adminLog.getTop();
+        adminLog.pop();
+
+        Document* d = archive.findDataPtr(archive.getRoot(), last.docID);
+        if (!d) return;
+
+        if (last.type == 1) { // Undo Submission
+            d->status = "Cancelled/Removed"; 
+            cout << "[Undo] Submission of Doc " << last.docID << " reversed.\n";
+        } else if (last.type == 2) { // Undo Revision
+            d->revisions.pop();
+            cout << "[Undo] Revision of Doc " << last.docID << " reversed.\n";
+        } else if (last.type == 3) { // Undo Finalization
+            d->status = last.oldStatus;
+            cout << "[Undo] Finalization of Doc " << last.docID << " reversed.\n";
+        }
+    }
+};
+
+// ============================================================
+// 7. MAIN EXECUTION
+// ============================================================
 int main() {
-    WorkflowSystem govSystem;
+    WorkflowManager govSystem;
 
-    // 1. Submission
-    govSystem.submitDocument(105, "Tax Reform", "John Doe");
-    govSystem.submitDocument(101, "Health Policy", "Jane Smith");
-    govSystem.submitDocument(110, "Education Act", "Bob Wilson");
+    // i. Submission (O(log n))
+    govSystem.submitDocument(105, "Tax Reform", "Ali");
+    govSystem.submitDocument(102, "Health Memo", "Sara");
 
-    // 2. Review Workflow
-    govSystem.processNextReview(); // Processes 105 (FIFO)
+    // ii. Workflow (FIFO - O(1))
+    govSystem.processReview(); // Processes 105 first
 
-    // 3. Revisions
-    Document* doc = govSystem.searchDocument(105);
-    doc->addRevision("Updated Clause 1");
-    doc->addRevision("Fixed Typo in Header");
-    cout << "Added 2 revisions to Doc 105." << endl;
+    // iii. Revision (O(1))
+    govSystem.addRevision(105, "Updated Clause 2");
 
-    // 4. Undo Revision
-    doc->undoRevision();
-    cout << "Undid most recent revision for Doc 105." << endl;
+    // v. Finalize
+    govSystem.finalize(102, "approved");
 
-    // 5. Finalize
-    govSystem.finalizeDocument(101, true);
+    // vi. Archive (O(n))
+    govSystem.showArchive();
 
-    // 6. Archive Display
+    // vii. Admin Undo
+    cout << "\n--- Performing Administrative Undo ---\n";
+    govSystem.systemUndo(); // Reverses the approval of 102
     govSystem.showArchive();
 
     return 0;
