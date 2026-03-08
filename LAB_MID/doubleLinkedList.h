@@ -17,6 +17,10 @@ class doubleList
     dnode <S>*head,*tail;
     public:
     doubleList(): head(NULL),tail(NULL){}
+    
+    dnode<S>* getHead() const {
+        return head;
+    }
     bool isEmpty()  {return head == NULL;}
     doubleList ( const doubleList &obj)
     {

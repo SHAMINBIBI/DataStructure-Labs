@@ -2,84 +2,98 @@
 #define DYNAMICSTACKT_H
 #include <iostream>
 using namespace std;
+
 template <class T>
-struct node {
+struct stack_node {  // Changed from 'node' to 'stack_node'
     T data;
-    node<T> * next;
-    node(T d) : data(d), next(NULL) {}
+    stack_node<T> * next;
+    stack_node(T d) : data(d), next(NULL) {}
 };
+
 template <class S>
 class dynamicStack
-{   node<S>* top;    
-    public:
-    dynamicStack() : top(NULL) {}  
-    dynamicStack <S>(const dynamicStack<S>& obj) : top(NULL) {
+{   
+    stack_node<S>* top;
+    
+public:
+    dynamicStack() : top(NULL) {}
+    
+    dynamicStack(const dynamicStack<S>& obj) : top(NULL) {
         if (obj.top == NULL) {
             return;
         }
-        node<S> *temp = obj.top;
-        node<S> *temp2;
-        node<S>* n= new node<S>(temp->data);
-        temp2=n;
-        top = n;
-        temp = temp->next;  
+        
+        // Create a temporary stack to reverse order
+        dynamicStack<S> tempStack;
+        stack_node<S>* temp = obj.top;
+        
+        // Push all to temp (reverses)
         while(temp != NULL) {
-            n = new node<S>(temp->data);
-            temp2->next = n;
-            temp2 = n;
+            tempStack.push(temp->data);
             temp = temp->next;
-        }   
+        }
+        
+        // Pop from temp and push to this (reverses back)
+        while(!tempStack.isEmpty()) {
+            push(tempStack.getTop());
+            tempStack.pop();
+        }
     }
-    bool isEmpty()
-    {
+    
+    bool isEmpty() {
         return (top == NULL);
-    }    
-    void push(S d)
-    {
-        node<S>* newNode = new node<S>(d);
+    }
+    
+    void push(S d) {
+        stack_node<S>* newNode = new stack_node<S>(d);
         newNode->next = top;
         top = newNode;
-    }    
-    void pop()
-    {
-        if(isEmpty())
-        {
+    }
+    
+    void pop() {
+        if(isEmpty()) {
             cout << "Stack is empty" << endl;
             return;
-        }        
-        node<S>* temp = top;
+        }
+        
+        stack_node<S>* temp = top;
         top = top->next;
         delete temp;
-    }    
-    S getTop()
-    {
-        if(isEmpty())
-        {
+    }
+    
+    S getTop() {
+        if(isEmpty()) {
             cout << "Stack is empty" << endl;
             return S();
         }
         return top->data;
-    }    
-    void display()
-    {
-        if(isEmpty())
-        {
+    }
+    
+    void display() {
+        if(isEmpty()) {
             cout << "Stack is empty" << endl;
             return;
-        }        
-        cout << "Stack : ";
-        node<S>* temp = top;
-        while(temp != NULL)
-        {
-            cout << temp->data << " ";
+        }
+        
+        // Need to display in reverse for correct order
+        dynamicStack<S> tempStack;
+        stack_node<S>* temp = top;
+        
+        while(temp != NULL) {
+            tempStack.push(temp->data);
             temp = temp->next;
         }
+        
+        cout << "Stack : ";
+        while(!tempStack.isEmpty()) {
+            cout << tempStack.getTop() << " ";
+            tempStack.pop();
+        }
         cout << endl;
-    }    
-    ~dynamicStack()
-    {
-        while(!isEmpty())
-        {
+    }
+    
+    ~dynamicStack() {
+        while(!isEmpty()) {
             pop();
         }
     }
