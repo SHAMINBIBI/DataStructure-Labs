@@ -1,53 +1,79 @@
 #include <iostream>
 using namespace std;
-#include <list>
-template <class T>  //template
-class myList:public list<T>  //inheritance used 
-{ public:
-  void display()   //display function , was not built in i STL so we made it
-  {
-     typename list<T>:: iterator temp; //iterator declaration
-     temp = (*this).begin();
-     while (temp!= (*this).end())
-     {
-        cout<< (*temp)<<endl;
-        temp++;
-     }
-  }
-  bool operator == (myList<T> &l)  //operator overloadinng for ==
-  {     if (this->size() != l.size())   //if size not equal list definitely not equal
-        {
-            return false;
-     }
-        typename list<T> :: iterator temp ;
-        temp = (*this).begin();
-        typename list<T> :: iterator temp2;
-        temp2 =  l.begin();
-
-        while(temp!=(*this).end() )  //while loop till past-the-end
-        {
-            if((*temp)!= *temp2)  //comparison
-            {
-                return false;
-            }
-            temp++;   //incrementing iterators
-            temp2++;
-        }
-        return true;
-  }
-};
-int main()
-{   myList <int> l;
-    l.push_back(5);
-    l.push_back(4);
-    l.display();
-    myList <int> l2;
-    l2.push_back(5);
-    l2.push_back(4);
-    l2.display();
-    if(l==l2)
-    {
-        cout << "Lists are equal"<<endl;    
-    }
-    return 0;
+#include <algorithm>
+double kg_to_g(double in)
+{
+    return (in*1000);
 }
+int main()
+{
+    double kg[]={1,2,3,4,5};
+    double g[5];
+    transform(kg,kg+5,g,kg_to_g);
+    for(int i=0;i<5;i++)
+    {
+        cout << g[i] << endl;
+    }
+
+   return 0;
+}
+
+
+
+
+
+// #include <iostream>
+// using namespace std;
+// #include <list>
+// template <class T>  
+// class myList:public list<T>  //inheritance 
+// { public:
+//   void display()   //display function 
+//   {
+//      typename list<T>:: iterator temp; //iterator declaration
+//      temp = (*this).begin();
+//      while (temp!= (*this).end())
+//      {
+//         cout<< (*temp)<<endl;
+//         temp++;
+//      }
+//   }
+//   bool operator == (myList<T> &l)  //operator overloadinng for ==
+//   {     typename list<T>:: iterator temp1; 
+//         typename list<T>:: iterator temp2;
+//         temp1 = (*this).begin();
+//         temp2 = l.begin();
+//         while (temp1!= (*this).end() && temp2!= l.end())
+//         {
+//             if((*temp1) != (*temp2))
+//             {
+//                 return false;
+//             }
+//             temp1++;
+//             temp2++;
+//         }
+//         if(temp1 == (*this).end() && temp2 == l.end())
+//         {
+//             return true;
+//         }
+//         else
+//         {
+//             return false;
+//         }
+//   }
+// };
+// int main()
+// {   myList <int> l;
+//     l.push_back(1);
+//     l.push_back(2);
+//     l.display();
+//     myList <int> l2;
+//     l2.push_back(1);
+//     l2.push_back(2);
+//     l2.display();
+//     if(l==l2)
+//     {
+//         cout << "EQUAL"<<endl;    
+//     }
+//     return 0;
+// }
