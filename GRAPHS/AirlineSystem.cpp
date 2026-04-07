@@ -2,6 +2,7 @@
 #include <list>
 #include <queue>
 #include <stack>
+#include <string>
 using namespace std;
 const int MAX=100000;
 const int MAX_VERTICES =20;
@@ -9,13 +10,13 @@ template <class T>
 struct Edge
 {  T vertex;
    int weight;
-   Edge(){ vertex=0; weight=0;} // initialize  values
+   Edge(){ vertex=T(); weight=0;} 
 };
 template <class T>
 struct GNode
 {   T vertex;
     list<Edge<T>> adjList;
-    GNode(){ vertex=0;} // initialize values
+    GNode(){ vertex=T();} 
 };
 template <class T>
 class Graph
@@ -24,20 +25,20 @@ class Graph
       int vcount;
       bool isDirected; 
     public:
-       Graph(bool directed = false) // set graph direction type
+       Graph(bool directed = false)
        {   vcount = 0;
            isDirected = directed;
        }
-       ~Graph() // destroy graph and lists
+       ~Graph()
        {  for (int i=0; i <vcount ;i++)
          { arr[i].adjList.clear();}
          vcount =0;
        } 
-       bool isEmpty() // check if graph empty
+       bool isEmpty()
        { return vcount==0;}
-       int getVertices() // return total vertex count
+       int getVertices()
        { return vcount;}
-       int getEdges() // calculate total edge count
+       int getEdges()
        {
         int count =0;
         for(int i=0; i <vcount ;i++)
@@ -45,26 +46,24 @@ class Graph
         if (isDirected) return count; 
         return count/2;               
        }
-       int searchVert(T vert) // find vertex array index
+       int searchVert(T vert)
        {  for (int i=0; i <vcount ;i++)
           { if(arr[i].vertex ==vert)
             return i;   
           }
           return -1;    
        }
-       void insertVertex(T vert) // add new unique vertex
+       void insertVertex(T vert)
        {   if(vcount >= MAX_VERTICES)
-           { cout << "Graph full Cannot insert more vertices\n";
+           { cout << "Graph full\n";
              return;
            }
            if(searchVert(vert) != -1)
-           { cout << "Node "<< vert << "already exists in graph\n";
-             return;
-           }
+           { return;}
            arr[vcount].vertex = vert;
            vcount++;
        }
-       bool edgeExists(T vert1, T vert2) // check if edge exists
+       bool edgeExists(T vert1, T vert2)
        {  int loc = searchVert(vert1);
           if(loc==-1) 
           { return false;}
@@ -76,7 +75,7 @@ class Graph
           }
           return false;
        }
-       void insertEdge(T vert1, T vert2, int weight) // connect two existing vertices
+       void insertEdge(T vert1, T vert2, int weight)
        {int loc1 = searchVert(vert1);
         int loc2 = searchVert(vert2);
         if( loc1!= -1 && loc2!= -1 && !edgeExists(vert1,vert2))
@@ -91,10 +90,8 @@ class Graph
                 arr[loc2].adjList.push_back(e2);
             }
         }
-        else
-        { cout << "Cannot insert edge between "<< vert1 << " and "<< vert2 << " Vertices do not exist or edge already exists"<< endl;}
        }
-       void deleteEdge(T vert1,T vert2) // remove connection between vertices
+       void deleteEdge(T vert1,T vert2)
        {  int loc1 = searchVert(vert1);
           int loc2 = searchVert(vert2);
           if(loc1!= -1)
@@ -116,7 +113,7 @@ class Graph
             }
           }
        }
-       void deleteVertex(T vert) // remove vertex and edges
+       void deleteVertex(T vert)
        {int loc = searchVert(vert);
         if(loc== -1)
         { return ;}
@@ -133,18 +130,31 @@ class Graph
         { arr[i] = arr[i + 1];}
         vcount--;
        }
-       void BFS(T start) // breadth first search traversal
+       void displayOutgoing(T vert)
+       { int loc = searchVert(vert);
+         if(loc == -1) return;
+         cout << "Outgoing flights from " << vert << ":\n";
+         typename list<Edge<T>>::iterator it = arr[loc].adjList.begin();
+         while(it != arr[loc].adjList.end())
+         { cout << " - " << it->vertex << "  Cost: Rs." << it->weight << "\n"; it++; }
+       }
+       void displayIncoming(T vert)
+       { cout << "Incoming flights to " << vert << ":\n";
+         for(int i=0; i<vcount; i++)
+         { typename list<Edge<T>>::iterator it = arr[i].adjList.begin();
+           while(it != arr[i].adjList.end())
+           { if(it->vertex == vert) cout << " - " << arr[i].vertex << " Cost: Rs." << it->weight << "\n"; it++; }
+         }
+       }
+       void BFS(T start)
        { int startLoc = searchVert(start);
-        if (startLoc == -1)
-        { cout << "Vertex not found in graph\n";
-          return;
-        }
+        if (startLoc == -1) return;
         bool visited[MAX_VERTICES];
         for (int i =0; i < vcount ;i++) visited[i] = false;
         queue<T> q;
         visited[startLoc] = true;
         q.push(start);
-        cout << "BFS Traversal\n";
+        cout << "BFS Exploration: ";
         while(!q.empty())
         {   T curr = q.front();
             q.pop();
@@ -162,17 +172,14 @@ class Graph
         }          
         cout << "\n";
        }
-       void DFS(T start) // depth first search traversal
+       void DFS(T start)
        { int startLoc = searchVert(start);
-        if (startLoc == -1)
-        { cout << "Vertex not found in graph\n";
-          return;
-        }
+        if (startLoc == -1) return;
         bool visited[MAX_VERTICES];
         for (int i =0; i < vcount ;i++) visited[i] = false;
         stack<T> s;
         s.push(start);
-        cout << "DFS Traversal\n";
+        cout << "DFS Network Analysis: ";
         while(!s.empty())
         {  T curr = s.top();
            s.pop();
@@ -191,7 +198,7 @@ class Graph
         }
         cout<< "\n";
         }
-        void shortestPath(T start,T end) // find minimum cost path
+        void shortestPath(T start,T end)
         {  int startLoc = searchVert(start);
            int endLoc = searchVert(end);
            if( startLoc == -1 || endLoc == -1)
@@ -225,92 +232,49 @@ class Graph
             }
           }
             if (dist[endLoc] == MAX)
-            { cout <<" No Path exists betweem " << start << " and "<< end << endl; 
+            { cout <<" No path exists\n"; 
              return; }
             list <T> path;
             int currLoc = endLoc;
             while (currLoc!=-1)
             { path.push_front(arr[currLoc].vertex);
               currLoc = parent[currLoc];}
-            cout << "Shortest path between "<< start << " and "<< end << " is : ";
+            cout << "Optimal Route: ";
             typename list<T>::iterator temp = path.begin();
             while(temp != path.end())
-            { cout << *temp << " ";
+            { cout << *temp << (next(temp) != path.end() ? " -> " : "");
               temp++;
             }
-            cout << "\n";
-        }
-        void MST(T start) // compute minimum spanning tree
-        { int startLoc = searchVert(start);
-          if (startLoc == -1)
-          { cout << "Vertex not found in graph\n";
-            return;
-          }
-          int key[MAX_VERTICES];
-          int parent[MAX_VERTICES];
-          bool inMST[MAX_VERTICES];
-          for(int i=0; i < vcount; i++)
-          { key[i] = MAX;
-            parent[i] = -1;
-            inMST[i] = false;
-          }
-            key[startLoc] =0;
-            int mstCost =0;
-            for (int i=0; i < vcount; i++) 
-            { int u = -1;
-              int minKey = MAX;
-              for (int j=0; j < vcount ;j++)
-              { if (!inMST[j] && key[j] < minKey)
-                { minKey = key[j];
-                  u = j;}
-              }
-              if (u==-1){ break;}
-              inMST[u] = true;
-              if(parent[u] != -1)
-              { cout << arr[parent[u]].vertex << " - " << arr[u].vertex << " Weight: "<< key[u] << "\n";
-                mstCost += key[u];
-              }
-                typename list <Edge<T>>::iterator temp = arr[u].adjList.begin();
-                while(temp != arr[u].adjList.end())
-                { int v = searchVert(temp->vertex);
-                    if (!inMST[v] && temp->weight < key[v])
-                    { key[v] = temp->weight;
-                    parent[v] = u;}
-                    temp++;
-                }
-            }
-            cout << "Total cost of MST: "<< mstCost << "\n";
+            cout << "\nTotal Cost: Rs." << dist[endLoc] << "\n";
         }
 };
 int main() 
-{   int choice;
-    cout << "Enter 1 for Directed Graph, 0 for Undirected Graph: ";
-    cin >> choice;
-    bool isDirected = (choice == 1);
-    Graph<char> g(isDirected);
-    g.insertVertex('A');
-    g.insertVertex('B');
-    g.insertVertex('C');
-    g.insertVertex('D');
-    g.insertVertex('E');
-    g.insertEdge('A', 'B', 4);
-    g.insertEdge('A', 'C', 2);
-    g.insertEdge('B', 'C', 1);
-    g.insertEdge('B', 'D', 5);
-    g.insertEdge('C', 'D', 8);
-    g.insertEdge('C', 'E', 10);
-    g.insertEdge('D', 'E', 2);
-    cout << "\nVertices: " << g.getVertices() << " | Edges: " << g.getEdges() << "\n\n";
-    g.BFS('A');
-    g.DFS('A');
+{   
+    Graph<string> airline(true); 
+    airline.insertVertex("Karachi"); 
+    airline.insertVertex("Riyadh"); 
+    airline.insertVertex("AbuDhabi"); 
+    airline.insertVertex("Lahore"); 
+    airline.insertVertex("Jeddah"); 
+    airline.insertEdge("Karachi", "Riyadh", 500); 
+    airline.insertEdge("Riyadh", "AbuDhabi", 400); 
+    airline.insertEdge("Karachi", "AbuDhabi", 1000); 
+    airline.insertEdge("AbuDhabi", "Lahore", 600); 
+    airline.insertEdge("Riyadh", "Lahore", 1200); 
+    airline.insertEdge("Lahore", "Jeddah", 300); 
+    airline.insertEdge("Jeddah", "Karachi", 800); 
+    cout << "    Airline Route System    \n";
+    cout << "Total Airports: " << airline.getVertices() << "\n";
+    cout << "Total Flight Routes: " << airline.getEdges() << "\n\n";
+    airline.displayOutgoing("Riyadh"); 
+    airline.displayIncoming("AbuDhabi");
     cout << "\n";
-    g.shortestPath('A', 'E');
-    cout << "\n";
-    cout << "Minimum Spanning Tree Edges:\n";
-    g.MST('A');
-    cout << "\n";
-    cout << "Delete Vertex C\n";
-    g.deleteVertex('C');
-    g.BFS('A');
+    airline.BFS("Karachi"); 
+    airline.DFS("Karachi");
+    cout << "\n    Route Optimization    \n";
+    airline.shortestPath("Karachi", "Lahore"); 
+    cout << "\nRemoving Airport AbuDhabi\n";
+    airline.deleteVertex("AbuDhabi");
+    airline.shortestPath("Karachi", "Lahore");
     return 0;
 }
