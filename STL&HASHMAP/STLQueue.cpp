@@ -150,10 +150,10 @@ int main() {
                 Q.searchByID(id);
                 break;                       }                     
             case 7:
-            {   cout << "Exiting system. Goodbye!" << endl;
+            {   cout << "Exiting system." << endl;
                 break;  }                            
             default:
-                cout << "Invalid choice! Please try again." << endl;        }       
+                cout << "Invalid choice Please try again." << endl;        }       
     } while(choice != 7);     
     return 0;
 }
