@@ -1,58 +1,34 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
-#include <queue>    // Used for iterative Breadth-First Search (BFS) traversal
-#include "AVL.h"    // Custom templated AVL Tree for O(log n) search speed
-
+#include <queue>    
+#include "AVL.h"    // templated AVL Tree for O(log n) search speed
 using namespace std;
 namespace fs = std::filesystem;
-/* 
-  // To satisfy the memory constraint, I am storing only the folder name 
-   and a pointer to the parent The full path is built only when needed
-*/
 struct DirectoryNode {
     string folderName;
     DirectoryNode* parentDirectory;
-    
-    /*
-     linking  all created folders into a linked list so they can 
-     be deleted  all at once during a 'refresh' or 'cd'
-    */
     DirectoryNode* nextMemoryNode; 
 };
 struct FileNode {
     string fileName;           // Stores the name with extension (e.g report.pdf)
     DirectoryNode* parentDirectory;
-    
-    // If two files have the same name,
-    // they are chained together in this linked list within one AVL node
-    FileNode* nextDuplicate; 
-    
-    // Background linked list to track all file memory for O(N) cleanup
-    FileNode* nextMemoryNode; 
+    FileNode* nextDuplicate;    
+    FileNode* nextMemoryNode;   // Background linked list 
 };
 class TurboPath {
 private:
     // Key: string (File name used for search)
     // Value: FileNode* (Pointer to the actual data)
-    AVL<string, FileNode*> fileSearchIndex; 
-    
-    // Tracking heads and tails for our background "" Linked Lists"
+    AVL<string, FileNode*> fileSearchIndex;    
+    // Tracking heads and tails for background " Linked Lists"
     DirectoryNode* memHeadDirs;
     DirectoryNode* memTailDirs;
     FileNode* memHeadFiles;
     FileNode* memTailFiles;
-
     int totalFilesIndexed;
-
-    /*
-       for Real-time updates/refresh, 
-       RAM must be wiped to prevent memory leaks 
-    */
     void clearAllMemory() {
         fileSearchIndex.clear(); // Clears the AVL tree nodes
-
-        // Delete all Directory objects linearly
         DirectoryNode* currDir = memHeadDirs;
         while (currDir != nullptr) {
             DirectoryNode* nextDir = currDir->nextMemoryNode;
@@ -60,8 +36,6 @@ private:
             currDir = nextDir;
         }
         memHeadDirs = nullptr; memTailDirs = nullptr;
-
-        // Delete all File objects linearly
         FileNode* currFile = memHeadFiles;
         while (currFile != nullptr) {
             FileNode* nextFile = currFile->nextMemoryNode;
@@ -72,17 +46,9 @@ private:
 
         totalFilesIndexed = 0;
     }
-
-    /*
-        addFileToindex creates a file node, adds it to the tracking chain, 
-       and inserts it into the AVL tree,it handles duplicates by checking if the 
-       key already exists, if it existss, it chains the new file to the old one
-    */
     void addFileToIndex(string searchKey, string actualFullName, DirectoryNode* currentFolder) {
         // Create new node 
         FileNode* newFile = new FileNode{ actualFullName, currentFolder, nullptr, nullptr };
-        
-        //  for later deletion
         if (memHeadFiles == nullptr) {
             memHeadFiles = newFile;
             memTailFiles = newFile;
@@ -90,40 +56,27 @@ private:
             memTailFiles->nextMemoryNode = newFile;
             memTailFiles = newFile;
         }
-
         // Search the AVL tree for this name 
         FileNode** existingDuplicateHead = fileSearchIndex.search(searchKey);
-
         if (existingDuplicateHead != nullptr) {
-            // If name exists, prepend the new file to the linked list
             newFile->nextDuplicate = *existingDuplicateHead;
             *existingDuplicateHead = newFile; 
         } else {
-            // New unique name, insert into AVL Tree
             fileSearchIndex.insert(searchKey, newFile);
         }
     }
-
 public:
     TurboPath() {
         memHeadDirs = nullptr; memTailDirs = nullptr;
         memHeadFiles = nullptr; memTailFiles = nullptr;
         totalFilesIndexed = 0;
     }
-
-    //  Automatic cleanup when the application closes
     ~TurboPath() {
         clearAllMemory(); 
     }
-
-    /*
-       Reconstructing the absolute path by following parentDirectory 
-       pointers until the root is reached, keeps Space Complexity at O(N).
-    */
     string buildAbsolutePath(FileNode* file) {
         string absolutePath = file->fileName; 
-        DirectoryNode* currentFolder = file->parentDirectory;
-        
+        DirectoryNode* currentFolder = file->parentDirectory;     
         while (currentFolder != nullptr) {
             // Check for root drives (C:/ or /) to avoid double slashes
             if (currentFolder->folderName == "C:\\" || currentFolder->folderName == "C:/" || currentFolder->folderName == "/") {
@@ -135,24 +88,15 @@ public:
         }
         return absolutePath;
     }
-
-    /*
-       A Queue to perform Breadth-First Search (BFS).
-       Iterative traversal is used instead of recursion to prevent Stack Overflow 
-       on massive drives with deeply nested folders
-    */
+    //   A Queue to perform Breadth-First Search (BFS)
     void indexDirectory(const string& rootPathString) {
-        clearAllMemory(); // Clear old data to allow for fresh indexing
-        
+        clearAllMemory(); 
         fs::path startPath(rootPathString);
         cout << "Turbo Path is indexing files into RAM.Please wait." << endl;
-
         // Create the directory node
         DirectoryNode* rootFolderNode = new DirectoryNode{ startPath.string(), nullptr, nullptr };
         memHeadDirs = rootFolderNode;
         memTailDirs = rootFolderNode;
-
-        // Queue stores pairs of <OS Path,  Custom Directory Node>
         queue<pair<fs::path, DirectoryNode*>> traversalQueue;
         traversalQueue.push({startPath, rootFolderNode});
 
@@ -161,19 +105,15 @@ public:
             fs::path currentOsPath = currentItem.first;
             DirectoryNode* currentCustomFolder = currentItem.second;
             traversalQueue.pop();
-
             try {
                 // Iterate through items in the directory using C++17 filesystem
-                for (const auto& entry : fs::directory_iterator(currentOsPath)) {
-                    
+                for (const auto& entry : fs::directory_iterator(currentOsPath)) {                   
                     if (fs::is_directory(entry.status())) {
                         // Found a sub-folder Create node and add to queue to explore later.
                         string folderName = entry.path().filename().string();
-                        DirectoryNode* newFolder = new DirectoryNode{ folderName, currentCustomFolder, nullptr };
-                        
+                        DirectoryNode* newFolder = new DirectoryNode{ folderName, currentCustomFolder, nullptr };                      
                         memTailDirs->nextMemoryNode = newFolder;
                         memTailDirs = newFolder;
-
                         traversalQueue.push({entry.path(), newFolder});
                     } 
                     else if (fs::is_regular_file(entry.status())) {
@@ -194,29 +134,19 @@ public:
                     }
                 }
             } catch (const exception& e) {
-                // Skips system-protected folders (Access Denied) to prevent crashes
                 continue; 
             }
         }
         cout << "Indexing is complete. TurboPath has indexed " << totalFilesIndexed << " files" << endl;
     }
-
-    /*
-       Search operation runs in O(log n) time
-       It accesses the AVL tree, gets the head of the duplicate list, 
-       and prints paths for all files in that list.
-    */
     void searchFile(const string& targetFileName) {
         // fileSearchIndex.search returns a pointer to the FileNode* pointer in the tree
-        FileNode** searchResult = fileSearchIndex.search(targetFileName);
-        
+        FileNode** searchResult = fileSearchIndex.search(targetFileName);   
         if (searchResult != nullptr) {
-            cout << "\nFound match(es) instantly:" << endl;
-            
+            cout << "\nFound match(es) instantly:" << endl;        
             // Iterate through the linked list of files sharing this name
             FileNode* duplicateIterator = *searchResult;
             int matchCount = 0;
-            
             while (duplicateIterator != nullptr) {
                 // Reconstruct path to save space
                 cout << " -> " << buildAbsolutePath(duplicateIterator) << endl;
@@ -229,23 +159,18 @@ public:
         }
     }
 };
-/*
-   Encapsulates directory input and validation
-   Prevents the application from crashing on invalid paths
-*/
+//  Encapsulates directory input and validation
 string getValidDirectory() {
     string pathInput;
     while (true) {
         cout << "\nEnter the root directory path to index (e.g., . or C:/): ";
         getline(cin, pathInput);
-
         // Check for empty or whitespace inputs
         if (pathInput.empty() || pathInput.find_first_not_of(' ') == string::npos) {
             cout << "Input cannot be empty. Please try again." << endl;
             continue;
         }
-
-        // Verify path actually exists on the hard drive
+               // Verify path actually exists on the hard drive
         if (fs::exists(pathInput) && fs::is_directory(pathInput)) {
             return pathInput; 
         } else {
@@ -253,7 +178,6 @@ string getValidDirectory() {
         }
     }
 }
-
 int main() {
     cout << "==============================================" << endl;
     cout << "      Welcome to Sham's Turbo-Path Search     " << endl;
@@ -268,7 +192,6 @@ int main() {
     while (true) {
         cout << "\nEnter file name (or 'refresh' to update, 'cd' to change directory, 'exit' to quit): ";
         getline(cin, userQuery);
-
         //  Input validation for search query
         if (userQuery.empty() || userQuery.find_first_not_of(' ') == string::npos) {
             cout << "Please enter a valid file name." << endl;
@@ -283,15 +206,12 @@ int main() {
             searchEngine.indexDirectory(rootPathInput);
         }
         else if (userQuery == "cd") {
-            //  Change directory.Deletes old data before indexing new path
             rootPathInput = getValidDirectory();
             searchEngine.indexDirectory(rootPathInput);
         }
         else {
-            //  Perform the instant O(log n) search
             searchEngine.searchFile(userQuery);
         }
     }
-
     return 0;
 }

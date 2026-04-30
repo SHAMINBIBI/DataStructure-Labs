@@ -198,33 +198,28 @@ public:
 };
 int main() {
     AVL<int> myTree;
-    myTree.insert(10);
-    myTree.insert(20);
     myTree.insert(30);
-    myTree.insert(40);
-    myTree.insert(50);
-    myTree.insert(25);
-    
+    myTree.insert(20);
+    myTree.insert(10);
     cout << "PreOrder Traversal: ";
-    myTree.printPreOrder(); // Should output properly balanced tree
+    myTree.printPreOrder(); 
 
     // Test Search
-    cout << "\n--- SEARCHING ---" << endl;
-    if (myTree.search(30)) cout << "Found 30 in the tree!" << endl;
-    else cout << "30 not found." << endl;
+    cout << "\n   SEARCHING   " << endl;
+    if (myTree.search(20)) cout << "Found 20 in the tree!" << endl;
+    else cout << "20 not found." << endl;
 
-    if (myTree.search(99)) cout << "Found 99 in the tree!" << endl;
-    else cout << "99 not found." << endl;
+    if (myTree.search(100)) cout << "Found 100 in the tree!" << endl;
+    else cout << "100 not found." << endl;
 
     // Test Deletion
-    cout << "\n--- DELETING ---" << endl;
-    cout << "Deleting 30..." << endl;
-    myTree.remove(30);
+    cout << "\n   DELETING " << endl;
+    cout << "Deleting 20" << endl;
+    myTree.remove(20);
     cout << "PreOrder Traversal after deleting 30: ";
     myTree.printPreOrder();
-
     // Test Clear
-    cout << "\n--- CLEARING TREE ---" << endl;
+    cout << "\n   CLEARING TREE   " << endl;
     myTree.clear();
     myTree.printPreOrder();
 

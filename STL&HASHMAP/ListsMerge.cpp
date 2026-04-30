@@ -38,7 +38,7 @@ public:
     void mergeCollections() {
         mergedList = department1;
         mergedList.merge(department2);
-        cout << "MergedList!\n";
+        cout << "MergedList\n";
     }  
     void displaymergedList() {
         if (mergedList.empty()) {
